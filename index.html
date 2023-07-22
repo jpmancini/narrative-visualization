@@ -94,7 +94,10 @@
         .style("stroke", d => z(d.team));
 
       country.append("text")
-        .datum(function(d) { return {id: d.key, value: d.values[d.values.length - 1]}; })
+        .datum(function(d) { 
+          const lastValue = d.values[d.values.length - 1]; 
+          return {id: d.team, value: lastValue ? lastValue : {year: 0, total: 0}}; 
+        })
         .attr("transform", function(d) { return "translate(" + x(parseTime(d.value.key)) + "," + y(d.value.value) + ")"; })
         .attr("x", 3)
         .attr("dy", "0.35em")
