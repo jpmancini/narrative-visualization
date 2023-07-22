@@ -54,7 +54,11 @@
       years = years.map(y => parseTime(y.toString()));
       
       const series = teams.map(t => {
-        return {team: t, values: years.map(y => {return {year: y, total: medalCounts[t][y.getFullYear()] || 0};})};
+        return {team: t, values: years.map(y => {
+          const year = y.getFullYear();
+          const count = medalCounts[t][year];
+          return {year: y, total: count === undefined ? 0 : count};
+        })};
       });
 
       x.domain(d3.extent(years));
