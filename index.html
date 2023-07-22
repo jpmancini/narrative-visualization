@@ -37,41 +37,40 @@
             .y(function(d) { return y(d.total); });
         
         d3.csv("https://raw.githubusercontent.com/jpmancini/narrative-visualization/main/data/athlete_events.csv").then(function(data) {
-            // data = data.filter(d => d.Medal === "Gold" && 
-            //                        (d.Team === "United States" || d.Team === "France" || d.Team === "Great Britain" || d.Team === "Russia" || d.Team === "Soviet Union"))
-            //            .map(d => ({year: parseTime(d.Year), team: d.Team}));
+            data = data.filter(d => d.Medal === "Gold" && 
+                                   (d.Team === "United States" || d.Team === "France" || d.Team === "Great Britain" || d.Team === "Russia" || d.Team === "Soviet Union"))
+                       .map(d => ({year: parseTime(d.Year), team: d.Team}));
 
-            // data = d3.nest()
-            //          .key(function(d) { return d.year; })
-            //          .rollup(function(v) { return v.length; })
-            //          .entries(data);
+            data = d3.nest()
+                     .key(function(d) { return d.year; })
+                     .rollup(function(v) { return v.length; })
+                     .entries(data);
 
-            // x.domain(d3.extent(data, function(d) { return d.key; }));
-            // y.domain(d3.extent(data, function(d) { return d.value; }));
+            x.domain(d3.extent(data, function(d) { return d.key; }));
+            y.domain(d3.extent(data, function(d) { return d.value; }));
 
-            // g.append("g")
-            //     .attr("transform", "translate(0," + height + ")")
-            //     .call(d3.axisBottom(x));
+            g.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .call(d3.axisBottom(x));
 
-            // g.append("g")
-            //     .call(d3.axisLeft(y))
-            //     .append("text")
-            //     .attr("fill", "#000")
-            //     .attr("transform", "rotate(-90)")
-            //     .attr("y", 6)
-            //     .attr("dy", "0.71em")
-            //     .attr("text-anchor", "end")
-            //     .text("Total Gold Medals");
+            g.append("g")
+                .call(d3.axisLeft(y))
+                .append("text")
+                .attr("fill", "#000")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 6)
+                .attr("dy", "0.71em")
+                .attr("text-anchor", "end")
+                .text("Total Gold Medals");
 
-            // g.append("path")
-            //     .datum(data)
-            //     .attr("fill", "none")
-            //     .attr("stroke", "steelblue")
-            //     .attr("stroke-linejoin", "round")
-            //     .attr("stroke-linecap", "round")
-            //     .attr("stroke-width", 1.5)
-            //     .attr("d", line);
-            console.log(data);
+            g.append("path")
+                .datum(data)
+                .attr("fill", "none")
+                .attr("stroke", "steelblue")
+                .attr("stroke-linejoin", "round")
+                .attr("stroke-linecap", "round")
+                .attr("stroke-width", 1.5)
+                .attr("d", line);
         }).catch(function(error){
             console.log(error);
         });
