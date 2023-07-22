@@ -42,18 +42,27 @@
                   .map(d => ({year: d.Year, team: d.Team}));
 
       data = d3.nest()
-                .key(function(d) { return d.year; })
-                .rollup(function(v) { return v.length; })
-                .entries(data);
+        .key(function(d) { return d.team; })
+        .key(function(d) { return d.year; })
+        .rollup(function(v) { return v.length; })
+        .entries(data);
 
       x.domain(d3.extent(data, function(d) { return parseTime(d.key); }));
-      y.domain(d3.extent(data, function(d) { return d.value; }));
+      
+      y.domain([
+        d3.min(data, function(c) { return d3.min(c.values, function(d) { return d.value; }); }),
+        d3.max(data, function(c) { return d3.max(c.values, function(d) { return d.value; }); })
+      ]);
+
+      z.domain(data.map(function(c) { return c.key; }));
 
       g.append("g")
+        .attr("class", "axis axis--x")
         .attr("transform", "translate(0," + height + ")")
         .call(d3.axisBottom(x));
 
       g.append("g")
+        .attr("class", "axis axis--y")
         .call(d3.axisLeft(y))
         .append("text")
         .attr("fill", "#000")
@@ -63,14 +72,27 @@
         .attr("text-anchor", "end")
         .text("Total Gold Medals");
 
-      g.append("path")
-        .datum(data)
-        .attr("fill", "none")
-        .attr("stroke", "steelblue")
-        .attr("stroke-linejoin", "round")
-        .attr("stroke-linecap", "round")
-        .attr("stroke-width", 1.5)
-        .attr("d", line);
+      const country = g.selectAll(".country")
+        .data(data)
+        .enter().append("g")
+          .attr("class", "country");
+
+      country.append("path")
+        .attr("class", "line")
+        .attr("d", function(d) { 
+          return line(d.values.map(function(v) {
+            return {year: parseTime(v.key), total: v.value};
+          })); 
+        })
+        .style("stroke", function(d) { return z(d.key); });
+
+      country.append("text")
+        .datum(function(d) { return {id: d.key, value: d.values[d.values.length - 1]}; })
+        .attr("transform", function(d) { return "translate(" + x(parseTime(d.value.key)) + "," + y(d.value.value) + ")"; })
+        .attr("x", 3)
+        .attr("dy", "0.35em")
+        .style("font", "10px sans-serif")
+        .text(function(d) { return d.id; });
     }).catch(function(error){
       console.log(error);
     });
