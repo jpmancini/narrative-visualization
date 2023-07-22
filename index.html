@@ -61,6 +61,9 @@
         })};
       });
 
+      console.log("Medal Counts:", medalCounts);
+      console.log("Series:", series); 
+
       x.domain(d3.extent(years));
 
       y.domain([0, d3.max(series, c => d3.max(c.values, v => v.total))]);
