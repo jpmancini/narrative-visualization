@@ -32,6 +32,8 @@
 
     const y = d3.scaleLinear().rangeRound([height, 0]);
 
+    const z = d3.scaleOrdinal(d3.schemeCategory10);
+
     const line = d3.line()
       .x(function(d) { return x(parseTime(d.key)); })
       .y(function(d) { return y(d.value); });
