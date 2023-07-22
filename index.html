@@ -95,6 +95,7 @@
 
       country.append("text")
         .datum(function(d) { 
+          console.log(d);
           const valuesNotEmpty = Array.isArray(d.values) && d.values.length > 0;
           const lastValue = valuesNotEmpty ? d.values[d.values.length - 1] : undefined; 
           return {id: d.team, value: lastValue ? lastValue : {year: parseTime("1896"), total: 0}}; 
