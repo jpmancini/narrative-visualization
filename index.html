@@ -43,20 +43,25 @@
                               (d.Team === "United States" || d.Team === "France" || d.Team === "Great Britain" || d.Team === "Russia" || d.Team === "Soviet Union"))
                   .map(d => ({year: d.Year, team: d.Team}));
 
-      data = d3.nest()
+      const medalCounts = d3.nest()
         .key(function(d) { return d.team; })
         .key(function(d) { return d.year; })
         .rollup(function(v) { return v.length; })
-        .entries(data);
+        .object(data);
 
-      x.domain(d3.extent(data, function(d) { return parseTime(d.key); }));
+      const teams = Object.keys(medalCounts);
+      let years = Array.from(new Set(data.map(d => d.year))).sort();
+      years = years.map(y => parseTime(y.toString()));
       
-      y.domain([
-        d3.min(data, function(c) { return d3.min(c.values, function(d) { return d.value; }); }),
-        d3.max(data, function(c) { return d3.max(c.values, function(d) { return d.value; }); })
-      ]);
+      const series = teams.map(t => {
+        return {team: t, values: years.map(y => {return {year: y, total: medalCounts[t][y.getFullYear()] || 0};})};
+      });
 
-      z.domain(data.map(function(c) { return c.key; }));
+      x.domain(d3.extent(years));
+
+      y.domain([0, d3.max(series, c => d3.max(c.values, v => v.total))]);
+
+      z.domain(teams);
 
       g.append("g")
         .attr("class", "axis axis--x")
@@ -81,12 +86,8 @@
 
       country.append("path")
         .attr("class", "line")
-        .attr("d", function(d) { 
-          return line(d.values.map(function(v) {
-            return {year: parseTime(v.key), total: v.value};
-          })); 
-        })
-        .style("stroke", function(d) { return z(d.key); });
+        .attr("d", d => line(d.values))
+        .style("stroke", d => z(d.team));
 
       country.append("text")
         .datum(function(d) { return {id: d.key, value: d.values[d.values.length - 1]}; })
