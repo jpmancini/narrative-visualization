@@ -63,6 +63,7 @@
 
       x.domain(d3.extent(years));
 
+      console.log(series);
       y.domain([0, d3.max(series, c => d3.max(c.values, v => v.total))]);
 
       z.domain(teams);
@@ -95,6 +96,7 @@
 
       country.append("text")
         .datum(function(d) { 
+          console.log(d);
           const lastValue = d.values[d.values.length - 1]; 
           return {id: d.team, value: lastValue ? lastValue : {year: 0, total: 0}}; 
         })
