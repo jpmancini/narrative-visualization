@@ -94,7 +94,10 @@
 
       country.append("path")
         .attr("class", "line")
-        .attr("d", d => lineGenerator(d.values))
+        .attr("d", function (d) {
+          console.log(d.values);
+          lineGenerator(d.values)
+        })
         .style("stroke", d => z(d.team));
 
       country.append("text")
