@@ -106,7 +106,7 @@
       country.append("path")
         .attr("class", "line")
         .attr("d", function (d) {
-          console.log(d);
+          console.log("country append: ", d);
           lineGenerator(d.values)
         })
         .style("stroke", d => z(d.team));
