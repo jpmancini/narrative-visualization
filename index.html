@@ -87,9 +87,9 @@
         .text("Total Gold Medals");
 
       const country = g.selectAll(".country")
-        .data(data)
+        .data(series)
         .enter().append("g")
-          .attr("class", "country");
+        .attr("class", "country");
 
       console.log("series 2: ", series);
       
