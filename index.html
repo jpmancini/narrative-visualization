@@ -166,6 +166,8 @@
         .rollup(function(v) { return v.length; })
         .object(data);
 
+      const parseTime = d3.timeParse("%Y");
+
       const teams = Object.keys(medalCounts);
       let years = Array.from(new Set(data.map(d => d.year))).sort();
       years = years.map(y => parseTime(y.toString()));
