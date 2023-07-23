@@ -62,7 +62,7 @@
         })};
       });
 
-      console.log("series 1: " + series);
+      console.log("series 1: ", series);
 
       x.domain(d3.extent(years));
 
@@ -91,7 +91,7 @@
         .enter().append("g")
           .attr("class", "country");
 
-      console.log("series 2: " + series);
+      console.log("series 2: ", series);
       
       country.append("path")
         .attr("class", "line")
