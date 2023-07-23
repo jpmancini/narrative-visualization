@@ -1,253 +1,117 @@
-<!-- <!DOCTYPE html>
+<!doctype html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>My D3 Chart</title>
-  <script src="https://d3js.org/d3.v5.min.js"></script>
-  <style>
-    /* Add your custom CSS styles here */
-    .chart {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 500px;
-    }
-  </style>
+    <!--Step 2-->
+    <script src="https://d3js.org/d3.v4.min.js"></script>
 </head>
 <body>
-  <div class="chart">
-    <svg width="900" height="500"></svg>
-  </div>
-
-  <script>
-    const svg = d3.select("svg"),
-      margin = {top: 20, right: 20, bottom: 30, left: 50},
-      width = +svg.attr("width") - margin.left - margin.right,
-      height = +svg.attr("height") - margin.top - margin.bottom,
-      g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-    console.log('margin output: ', margin);
-    
-    const parseTime = d3.timeParse("%Y");
-
-    const x = d3.scaleTime().rangeRound([0, width]);
-
-    const y = d3.scaleLinear().rangeRound([height, 0]);
-
-    const z = d3.scaleOrdinal(d3.schemeCategory10);
-
+<!--Step 2-->
+<svg width="500" height="400"></svg>
+<script>
+    // Step 1
     d3.csv("https://raw.githubusercontent.com/jpmancini/narrative-visualization/main/data/athlete_events.csv").then(function(data) {
-      data = data.filter(d => d.Medal === "Gold" && 
-        (d.Team === "United States" || d.Team === "France" || d.Team === "Great Britain" || d.Team === "Russia" || d.Team === "Soviet Union"))
-        .map(d => ({year: d.Year, team: d.Team}));
-
-    const medalCounts = d3.nest()
-      .key(function(d) { return d.team; })
-      .key(function(d) { return d.year; })
-      .rollup(function(v) { return v.length; })
-      .object(data);
-
-    const teams = Object.keys(medalCounts);
-    let years = Array.from(new Set(data.map(d => d.year))).sort();
-    years = years.map(y => parseTime(y.toString()));
+        data = data.filter(d => d.Medal === "Gold" && 
+            (d.Team === "United States" || d.Team === "France" || d.Team === "Great Britain" || d.Team === "Russia" || d.Team === "Soviet Union"))
+            .map(d => ({year: d.Year, team: d.Team}));
     
-    const series = teams.map(t => {
-      return {team: t, values: years.map(y => {
-        const year = y.getFullYear();
-        const count = medalCounts[t][year];
-        return {year: y, total: count === undefined ? 0 : count};
-      })};
-    });
+        const medalCounts = d3.nest()
+            .key(function(d) { return d.team; })
+            .key(function(d) { return d.year; })
+            .rollup(function(v) { return v.length; })
+            .object(data);
     
-    let xScale = d3.scaleTime()
-      .domain(d3.extent(data, function(d) { return d.year; }))
-      .range([0, width]);
-
-    let yScale = d3.scaleLinear()
-      .domain([0, d3.max(series, function(c) { return d3.max(c.values, function(d) { return d.total; }); })])
-      .range([height, 0]);      
-
-    var lineGenerator = d3.line()
-      .x(function(d) { return xScale(new Date(d.year)); })
-      .y(function(d) { return yScale(+d.total); })
-      .defined(function(d) { return !isNaN(new Date(d.year)) && !isNaN(+d.total); });
-
-      console.log("series 1: ", series);
-
-      x.domain(d3.extent(years));
-
-      y.domain([0, d3.max(series, c => d3.max(c.values, v => v.total))]);
-
-      z.domain(teams);
-
-      g.append("g")
-        .attr("class", "axis axis--x")
-        .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(x));
-
-      g.append("g")
-        .attr("class", "axis axis--y")
-        .call(d3.axisLeft(y))
-        .append("text")
-        .attr("fill", "#000")
-        .attr("transform", "rotate(-90)")
-        .attr("y", 6)
-        .attr("dy", "0.71em")
-        .attr("text-anchor", "end")
-        .text("Total Gold Medals");
-
-      const country = g.selectAll(".country")
-        .data(series)
-        .enter().append("g")
-        .attr("class", "country");
-
-      console.log("series 2: ", series);
+        const parseTime = d3.timeParse("%Y");
+    
+        const teams = Object.keys(medalCounts);
+        let years = Array.from(new Set(data.map(d => d.year))).sort();
+        years = years.map(y => parseTime(y.toString()));
       
-      country.append("path")
-        .attr("class", "line")
-        .attr("d", function (d) {
-          console.log("country append: ", d);
-          lineGenerator(d.values)
-        })
-        .style("stroke", d => z(d.team));
-
-      country.append("text")
-        .datum(function(d) { 
-          const valuesNotEmpty = Array.isArray(d.values) && d.values.length > 0;
-          const lastValue = valuesNotEmpty ? d.values[d.values.length - 1] : undefined; 
-          return {id: d.team, value: lastValue ? lastValue : {year: parseTime("1896"), total: 0}}; 
-        })
-        .attr("transform", function(d) { 
-          console.log("translate comment: ", d);
-          return "translate(" + x(parseTime(d.value.year)) + "," + y(d.value.total) + ")"; 
-        })
-        .attr("x", 3)
-        .attr("dy", "0.35em")
-        .style("font", "10px sans-serif")
-        .text(function(d) { return d.id; });
-    }).catch(function(error){
-      console.log(error);
-    });
-  </script>
-</body>
-</html> -->
-
-
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>My D3 Chart</title>
-  <script src="https://d3js.org/d3.v5.min.js"></script>
-  <style>
-    /* Add your custom CSS styles here */
-    .chart {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 500px;
-    }
-  </style>
-</head>
-<body>
-  <div class="chart">
-    <svg width="500" height="400"></svg>
-  </div>
-
-  <script>
-    d3.csv("https://raw.githubusercontent.com/jpmancini/narrative-visualization/main/data/athlete_events.csv").then(function(data) {
-      data = data.filter(d => d.Medal === "Gold" && 
-        (d.Team === "United States" || d.Team === "France" || d.Team === "Great Britain" || d.Team === "Russia" || d.Team === "Soviet Union"))
-        .map(d => ({year: d.Year, team: d.Team}));
-
-      const medalCounts = d3.nest()
-        .key(function(d) { return d.team; })
-        .key(function(d) { return d.year; })
-        .rollup(function(v) { return v.length; })
-        .object(data);
-
-      const parseTime = d3.timeParse("%Y");
-
-      const teams = Object.keys(medalCounts);
-      let years = Array.from(new Set(data.map(d => d.year))).sort();
-      years = years.map(y => parseTime(y.toString()));
-      
-      const series = teams.map(t => {
-        return {team: t, values: years.map(y => {
-          const year = y.getFullYear();
-          const count = medalCounts[t][year];
-          return {year: y, total: count === undefined ? 0 : count};
-        })};
-      });
-
-      var svg = d3.select("svg"),
-        margin = 200,
-        width = svg.attr("width") - margin,
-        height = svg.attr("height") - margin
-
-      var xScale = d3.scaleLinear().domain([0, 100]).range([0, width]),
-        yScale = d3.scaleLinear().domain([0, 200]).range([height, 0]);
-
-      // Chart label
-      svg.append('text')
+        const series = teams.map(t => {
+            return {team: t, values: years.map(y => {
+                const year = y.getFullYear();
+                const count = medalCounts[t][year];
+                return {year: y, total: count === undefined ? 0 : count};
+            })};
+        });
+    
+        let us_data = series[1].values;
+    
+        console.log("data: ", us_data);
+        // Step 3
+        var svg = d3.select("svg"),
+            margin = 200,
+            width = svg.attr("width") - margin, //300
+            height = svg.attr("height") - margin //200
+    
+        // Step 4 
+        var xScale = d3.scaleLinear().domain([0, 100]).range([0, width]),
+            yScale = d3.scaleLinear().domain([0, 200]).range([height, 0]);
+            
+        var g = svg.append("g")
+            .attr("transform", "translate(" + 100 + "," + 100 + ")");
+    
+        // Step 5
+        // Title
+        svg.append('text')
         .attr('x', width/2 + 100)
         .attr('y', 100)
         .attr('text-anchor', 'middle')
         .style('font-family', 'Helvetica')
         .style('font-size', 20)
-        .text('Olympic Medals');
-
-      // X label
-      svg.append('text')
-      .attr('x', width/2 + 100)
-      .attr('y', height - 15 + 150)
-      .attr('text-anchor', 'middle')
-      .style('font-family', 'Helvetica')
-      .style('font-size', 12)
-      .text('Year');
-
-      // Y label
-      svg.append('text')
-      .attr('text-anchor', 'middle')
-      .attr('transform', 'translate(60,' + height + ')rotate(-90)')
-      .style('font-family', 'Helvetica')
-      .style('font-size', 12)
-      .text('Medal Count');
-
-      svg.append("g")
-        .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(xScale));
-      
-      svg.append("g")
-        .call(d3.axisLeft(yScale));
-
-      svg.append('g')
+        .text('Line Chart');
+        
+        // X label
+        svg.append('text')
+        .attr('x', width/2 + 100)
+        .attr('y', height - 15 + 150)
+        .attr('text-anchor', 'middle')
+        .style('font-family', 'Helvetica')
+        .style('font-size', 12)
+        .text('Independant');
+        
+        // Y label
+        svg.append('text')
+        .attr('text-anchor', 'middle')
+        .attr('transform', 'translate(60,' + height + ')rotate(-90)')
+        .style('font-family', 'Helvetica')
+        .style('font-size', 12)
+        .text('Dependant');
+    
+        // Step 6
+        g.append("g")
+         .attr("transform", "translate(0," + height + ")")
+         .call(d3.axisBottom(xScale));
+        
+        g.append("g")
+         .call(d3.axisLeft(yScale));
+        
+        // Step 7
+        svg.append('g')
         .selectAll("dot")
-        .data(series[0].values)
+        .data(us_data)
         .enter()
         .append("circle")
         .attr("cx", function (d) { return xScale(d.year); } )
         .attr("cy", function (d) { return yScale(d.total); } )
-        .attr("r", 2)
+        .attr("r", 3)
         .attr("transform", "translate(" + 100 + "," + 100 + ")")
         .style("fill", "#CC0000");
-
-      var line = d3.line()
+    
+        // Step 8        
+        var line = d3.line()
         .x(function(d) { return xScale(d.year); }) 
         .y(function(d) { return yScale(d.total); }) 
         .curve(d3.curveMonotoneX)
-
-      svg.append("path")
-        .datum(series[0].values)
-        .attr("class", "line")
+        
+        svg.append("path")
+        .datum(us_data) 
+        .attr("class", "line") 
         .attr("transform", "translate(" + 100 + "," + 100 + ")")
         .attr("d", line)
         .style("fill", "none")
         .style("stroke", "#CC0000")
         .style("stroke-width", "2");
-    }).catch(function(error){
-      console.log(error);
     });
-  </script>
+</script>
 </body>
 </html>
