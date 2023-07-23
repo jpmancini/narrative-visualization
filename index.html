@@ -34,9 +34,10 @@
 
     const z = d3.scaleOrdinal(d3.schemeCategory10);
 
-    const line = d3.line()
-      .x(function(d) { return x(parseTime(d.key)); })
-      .y(function(d) { return y(d.value); });
+    var lineGenerator = d3.line()
+      .x(function(d) { return xScale(new Date(d.year)); })
+      .y(function(d) { return yScale(+d.total); })
+      .defined(function(d) { return !isNaN(new Date(d.year)) && !isNaN(+d.total); });
     
     d3.csv("https://raw.githubusercontent.com/jpmancini/narrative-visualization/main/data/athlete_events.csv").then(function(data) {
       data = data.filter(d => d.Medal === "Gold" && 
@@ -93,7 +94,7 @@
 
       country.append("path")
         .attr("class", "line")
-        .attr("d", d => line(d.values))
+        .attr("d", d => lineGenerator(d.values))
         .style("stroke", d => z(d.team));
 
       country.append("text")
