@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
@@ -125,6 +125,124 @@
         .attr("dy", "0.35em")
         .style("font", "10px sans-serif")
         .text(function(d) { return d.id; });
+    }).catch(function(error){
+      console.log(error);
+    });
+  </script>
+</body>
+</html> -->
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>My D3 Chart</title>
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+  <style>
+    /* Add your custom CSS styles here */
+    .chart {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 500px;
+    }
+  </style>
+</head>
+<body>
+  <div class="chart">
+    <svg width="900" height="500"></svg>
+  </div>
+
+  <script>
+    d3.csv("https://raw.githubusercontent.com/jpmancini/narrative-visualization/main/data/athlete_events.csv").then(function(data) {
+      data = data.filter(d => d.Medal === "Gold" && 
+        (d.Team === "United States" || d.Team === "France" || d.Team === "Great Britain" || d.Team === "Russia" || d.Team === "Soviet Union"))
+        .map(d => ({year: d.Year, team: d.Team}));
+
+    const medalCounts = d3.nest()
+      .key(function(d) { return d.team; })
+      .key(function(d) { return d.year; })
+      .rollup(function(v) { return v.length; })
+      .object(data);
+
+    const teams = Object.keys(medalCounts);
+    let years = Array.from(new Set(data.map(d => d.year))).sort();
+    years = years.map(y => parseTime(y.toString()));
+    
+    const series = teams.map(t => {
+      return {team: t, values: years.map(y => {
+        const year = y.getFullYear();
+        const count = medalCounts[t][year];
+        return {year: y, total: count === undefined ? 0 : count};
+      })};
+    });
+
+    var svg = d3.select("svg"),
+      margin = 200,
+      width = svg.attr("width") - margin,
+      height = svg.attr("height") - margin
+
+    var xScale = d3.scaleLinear().domain([0, 100]).range([0, width]),
+      yScale = d3.scaleLinear().domain([0, 200]).range([height, 0]);
+
+    // Chart label
+    svg.append('text')
+      .attr('x', width/2 + 100)
+      .attr('y', 100)
+      .attr('text-anchor', 'middle')
+      .style('font-family', 'Helvetica')
+      .style('font-size', 20)
+      .text('Olympic Medals');
+      
+    // X label
+    svg.append('text')
+    .attr('x', width/2 + 100)
+    .attr('y', height - 15 + 150)
+    .attr('text-anchor', 'middle')
+    .style('font-family', 'Helvetica')
+    .style('font-size', 12)
+    .text('Year');
+    
+    // Y label
+    svg.append('text')
+    .attr('text-anchor', 'middle')
+    .attr('transform', 'translate(60,' + height + ')rotate(-90)')
+    .style('font-family', 'Helvetica')
+    .style('font-size', 12)
+    .text('Medal Count');
+
+    svg.append("g")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(xScale));
+    
+    svg.append("g")
+      .call(d3.axisLeft(yScale));
+
+    svg.append('g')
+      .selectAll("dot")
+      .data(series[0].values)
+      .enter()
+      .append("circle")
+      .attr("cx", function (d) { return xScale(d.year); } )
+      .attr("cy", function (d) { return yScale(d.total); } )
+      .attr("r", 2)
+      .attr("transform", "translate(" + 100 + "," + 100 + ")")
+      .style("fill", "#CC0000");
+
+    var line = d3.line()
+      .x(function(d) { return xScale(d.year); }) 
+      .y(function(d) { return yScale(d.total); }) 
+      .curve(d3.curveMonotoneX)
+      
+    svg.append("path")
+      .datum(series[0].values)
+      .attr("class", "line")
+      .attr("transform", "translate(" + 100 + "," + 100 + ")")
+      .attr("d", line)
+      .style("fill", "none")
+      .style("stroke", "#CC0000")
+      .style("stroke-width", "2");
     }).catch(function(error){
       console.log(error);
     });
