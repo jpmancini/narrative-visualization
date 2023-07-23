@@ -36,9 +36,27 @@
 
     d3.csv("https://raw.githubusercontent.com/jpmancini/narrative-visualization/main/data/athlete_events.csv").then(function(data) {
       data = data.filter(d => d.Medal === "Gold" && 
-                              (d.Team === "United States" || d.Team === "France" || d.Team === "Great Britain" || d.Team === "Russia" || d.Team === "Soviet Union"))
-                  .map(d => ({year: d.Year, team: d.Team}));
+        (d.Team === "United States" || d.Team === "France" || d.Team === "Great Britain" || d.Team === "Russia" || d.Team === "Soviet Union"))
+        .map(d => ({year: d.Year, team: d.Team}));
 
+    const medalCounts = d3.nest()
+      .key(function(d) { return d.team; })
+      .key(function(d) { return d.year; })
+      .rollup(function(v) { return v.length; })
+      .object(data);
+
+    const teams = Object.keys(medalCounts);
+    let years = Array.from(new Set(data.map(d => d.year))).sort();
+    years = years.map(y => parseTime(y.toString()));
+    
+    const series = teams.map(t => {
+      return {team: t, values: years.map(y => {
+        const year = y.getFullYear();
+        const count = medalCounts[t][year];
+        return {year: y, total: count === undefined ? 0 : count};
+      })};
+    });
+    
     let xScale = d3.scaleTime()
       .domain(d3.extent(data, function(d) { return d.year; }))
       .range([0, width]);
@@ -51,24 +69,6 @@
       .x(function(d) { return xScale(new Date(d.year)); })
       .y(function(d) { return yScale(+d.total); })
       .defined(function(d) { return !isNaN(new Date(d.year)) && !isNaN(+d.total); });
-
-      const medalCounts = d3.nest()
-        .key(function(d) { return d.team; })
-        .key(function(d) { return d.year; })
-        .rollup(function(v) { return v.length; })
-        .object(data);
-
-      const teams = Object.keys(medalCounts);
-      let years = Array.from(new Set(data.map(d => d.year))).sort();
-      years = years.map(y => parseTime(y.toString()));
-      
-      const series = teams.map(t => {
-        return {team: t, values: years.map(y => {
-          const year = y.getFullYear();
-          const count = medalCounts[t][year];
-          return {year: y, total: count === undefined ? 0 : count};
-        })};
-      });
 
       console.log("series 1: ", series);
 
