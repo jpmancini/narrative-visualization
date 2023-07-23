@@ -115,7 +115,10 @@
           const lastValue = valuesNotEmpty ? d.values[d.values.length - 1] : undefined; 
           return {id: d.team, value: lastValue ? lastValue : {year: parseTime("1896"), total: 0}}; 
         })
-        .attr("transform", function(d) { return "translate(" + x(parseTime(d.value.key)) + "," + y(d.value.value) + ")"; })
+        .attr("transform", function(d) { 
+          console.log(d);
+          return "translate(" + x(parseTime(d.value.key)) + "," + y(d.value.value) + ")"; 
+        })
         .attr("x", 3)
         .attr("dy", "0.35em")
         .style("font", "10px sans-serif")
