@@ -25,6 +25,8 @@
       width = +svg.attr("width") - margin.left - margin.right,
       height = +svg.attr("height") - margin.top - margin.bottom,
       g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    console.log('margin output: ', margin);
     
     const parseTime = d3.timeParse("%Y");
 
@@ -116,7 +118,7 @@
           return {id: d.team, value: lastValue ? lastValue : {year: parseTime("1896"), total: 0}}; 
         })
         .attr("transform", function(d) { 
-          console.log(d);
+          console.log("translate comment: ", d);
           return "translate(" + x(parseTime(d.value.key)) + "," + y(d.value.value) + ")"; 
         })
         .attr("x", 3)
