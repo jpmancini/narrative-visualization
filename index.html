@@ -34,6 +34,11 @@
 
     const z = d3.scaleOrdinal(d3.schemeCategory10);
 
+    d3.csv("https://raw.githubusercontent.com/jpmancini/narrative-visualization/main/data/athlete_events.csv").then(function(data) {
+      data = data.filter(d => d.Medal === "Gold" && 
+                              (d.Team === "United States" || d.Team === "France" || d.Team === "Great Britain" || d.Team === "Russia" || d.Team === "Soviet Union"))
+                  .map(d => ({year: d.Year, team: d.Team}));
+
     let xScale = d3.scaleTime()
       .domain(d3.extent(data, function(d) { return d.year; }))
       .range([0, width]);
@@ -46,11 +51,6 @@
       .x(function(d) { return xScale(new Date(d.year)); })
       .y(function(d) { return yScale(+d.total); })
       .defined(function(d) { return !isNaN(new Date(d.year)) && !isNaN(+d.total); });
-    
-    d3.csv("https://raw.githubusercontent.com/jpmancini/narrative-visualization/main/data/athlete_events.csv").then(function(data) {
-      data = data.filter(d => d.Medal === "Gold" && 
-                              (d.Team === "United States" || d.Team === "France" || d.Team === "Great Britain" || d.Team === "Russia" || d.Team === "Soviet Union"))
-                  .map(d => ({year: d.Year, team: d.Team}));
 
       const medalCounts = d3.nest()
         .key(function(d) { return d.team; })
