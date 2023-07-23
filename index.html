@@ -119,7 +119,7 @@
         })
         .attr("transform", function(d) { 
           console.log("translate comment: ", d);
-          return "translate(" + x(parseTime(d.value.key)) + "," + y(d.value.value) + ")"; 
+          return "translate(" + x(parseTime(d.value.year)) + "," + y(d.value.total) + ")"; 
         })
         .attr("x", 3)
         .attr("dy", "0.35em")
