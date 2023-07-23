@@ -34,6 +34,14 @@
 
     const z = d3.scaleOrdinal(d3.schemeCategory10);
 
+    let xScale = d3.scaleTime()
+      .domain(d3.extent(data, function(d) { return d.year; }))
+      .range([0, width]);
+
+    let yScale = d3.scaleLinear()
+      .domain([0, d3.max(series, function(c) { return d3.max(c.values, function(d) { return d.total; }); })])
+      .range([height, 0]);      
+
     var lineGenerator = d3.line()
       .x(function(d) { return xScale(new Date(d.year)); })
       .y(function(d) { return yScale(+d.total); })
