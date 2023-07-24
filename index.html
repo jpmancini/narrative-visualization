@@ -1,108 +1,354 @@
 <!doctype html>
 <html>
 <head>
-  <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://rawgit.com/susielu/d3-annotation/master/d3-annotation.min.js"></script>
+    <style>
+        .button-4 {
+          appearance: none;
+          background-color: #FAFBFC;
+          border: 1px solid rgba(27, 31, 35, 0.15);
+          border-radius: 6px;
+          box-shadow: rgba(27, 31, 35, 0.04) 0 1px 0, rgba(255, 255, 255, 0.25) 0 1px 0 inset;
+          box-sizing: border-box;
+          color: #24292E;
+          cursor: pointer;
+          display: inline-block;
+          font-family: -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+          font-size: 14px;
+          font-weight: 500;
+          line-height: 20px;
+          list-style: none;
+          padding: 6px 16px;
+          position: relative;
+          transition: background-color 0.2s cubic-bezier(0.3, 0, 0.5, 1);
+          user-select: none;
+          -webkit-user-select: none;
+          touch-action: manipulation;
+          vertical-align: middle;
+          white-space: nowrap;
+          word-wrap: break-word;
+        }
+        
+        .button-4:hover {
+          background-color: #F3F4F6;
+          text-decoration: none;
+          transition-duration: 0.1s;
+        }
+        
+        .button-4:disabled {
+          background-color: #FAFBFC;
+          border-color: rgba(27, 31, 35, 0.15);
+          color: #959DA5;
+          cursor: default;
+        }
+        
+        .button-4:active {
+          background-color: #EDEFF2;
+          box-shadow: rgba(225, 228, 232, 0.2) 0 1px 0 inset;
+          transition: none 0s;
+        }
+        
+        .button-4:focus {
+          outline: 1px transparent;
+        }
+        
+        .button-4:before {
+          display: none;
+        }
+        
+        .button-4:-webkit-details-marker {
+          display: none;
+        }
+        
+        .center {
+          text-align: center;
+          padding: 10px;
+        }
+    </style>
 </head>
 <body>
-<svg width="500" height="400"></svg>
-<script>
-    d3.csv("https://raw.githubusercontent.com/jpmancini/narrative-visualization/main/data/athlete_events.csv").then(function(data) {
-        data = data.filter(d => d.Medal === "Gold" && 
-            (d.Team === "United States" || d.Team === "France" || d.Team === "Great Britain" || d.Team === "Russia" || d.Team === "Soviet Union"))
-            .map(d => ({year: d.Year, team: d.Team}));
+    <svg width="900" height="700"></svg>
+    <div class="center">
+        <p><b>The United States and Soviet Rivalry</b></p>
+        <button id="btn-us" class="button-4">United States</button>
+        <button id="btn-soviet-union" class="button-4">Soviet Union</button>
+        <button id="btn-russia" class="button-4">Russia</button>
+    </div>
+    <div class="center">
+        <p><b>Other Top Contenders</b></p>
+        <button id="btn-france" class="button-4">France</button>
+        <button id="btn-gb" class="button-4">Great Britain</button>
+        <button id="btn-italy" class="button-4">Italy</button>
+    </div>
+    <script>
+        d3.csv("https://raw.githubusercontent.com/jpmancini/narrative-visualization/main/data/athlete_events.csv").then(function(data) {
+            data = data.filter(d => (d.Medal === "Gold") && d.Season === "Summer" && 
+                (d.Team === "United States" || d.Team === "France" || d.Team === "Great Britain" || d.Team === "Russia" || d.Team === "Soviet Union" || d.Team === "Italy"))
+                .map(d => ({year: d.Year, team: d.Team}));
+        
+            const medalCounts = d3.nest()
+                .key(function(d) { return d.team; })
+                .key(function(d) { return d.year; })
+                .rollup(function(v) { return v.length; })
+                .object(data);
+        
+            const parseTime = d3.timeParse("%Y");
+        
+            const teams = Object.keys(medalCounts);
+            let years = Array.from(new Set(data.map(d => d.year))).sort();
+            years = years.map(y => parseTime(y.toString()));
+          
+            const series = teams.map(t => {
+                return {team: t, values: years.map(y => {
+                    const year = y.getFullYear();
+                    const count = medalCounts[t][year];
+                    return {year: y, total: count === undefined ? 0 : count};
+                })};
+            });
+        
+            let us_data = series[1].values;
+            
+            var svg = d3.select("svg"),
+                margin = 200,
+                width = svg.attr("width") - margin,
+                height = svg.attr("height") - margin
+        
+            var xScale = d3.scaleTime()
+                .domain(d3.extent(us_data, function(d) { 
+                    return new Date(d.year); 
+                }))
+                .range([0, width]);
+            var yScale = d3.scaleLinear().domain([0, 200]).range([height, 0]);
+                
+            var g = svg.append("g")
+                .attr("transform", "translate(" + 100 + "," + 100 + ")");
+        
+            svg.append('text')
+            .attr('x', width/2 + 100)
+            .attr('y', 100)
+            .attr('text-anchor', 'middle')
+            .style('font-family', 'Helvetica')
+            .style('font-size', 20)
+            .text('The Cold War as Seen Through the Olympics');
+            
+            svg.append('text')
+            .attr('x', width/2 + 100)
+            .attr('y', height - 15 + 150)
+            .attr('text-anchor', 'middle')
+            .style('font-family', 'Helvetica')
+            .style('font-size', 12)
+            .text('Year');
 
-        const medalCounts = d3.nest()
-            .key(function(d) { return d.team; })
-            .key(function(d) { return d.year; })
-            .rollup(function(v) { return v.length; })
-            .object(data);
+            svg.append('text')
+            .attr('text-anchor', 'middle')
+            .attr('transform', 'translate(60,' + (height-150) + ')rotate(-90)')
+            .style('font-family', 'Helvetica')
+            .style('font-size', 12)
+            .text('Total Medals for Athletes from Country');
 
-        const parseTime = d3.timeParse("%Y");
+            g.append("g")
+             .attr("transform", "translate(0," + height + ")")
+             .call(d3.axisBottom(xScale));
+            
+            g.append("g")
+             .call(d3.axisLeft(yScale));
 
-        const teams = Object.keys(medalCounts);
-        let years = Array.from(new Set(data.map(d => d.year))).sort();
-        years = years.map(y => parseTime(y.toString()));
-
-        const series = teams.map(t => {
-            return {team: t, values: years.map(y => {
-                const year = y.getFullYear();
-                const count = medalCounts[t][year];
-                return {year: y, total: count === undefined ? 0 : count};
-            })};
+            svg.append('g')
+            .selectAll("dot")
+            .data(us_data)
+            .enter()
+            .append("circle")
+            .attr("cx", function (d) { return xScale(d.year); } )
+            .attr("cy", function (d) { return yScale(d.total); } )
+            .attr("r", 3)
+            .attr("transform", "translate(" + 100 + "," + 100 + ")")
+            .style("fill", "#E69F00");
+       
+            var line = d3.line()
+            .x(function(d) { return xScale(d.year); }) 
+            .y(function(d) { return yScale(d.total); }) 
+            .curve(d3.curveMonotoneX)
+            
+            svg.append("path")
+            .datum(us_data) 
+            .attr("class", "line") 
+            .attr("transform", "translate(" + 100 + "," + 100 + ")")
+            .attr("d", line)
+            .style("fill", "none")
+            .style("stroke", "#E69F00")
+            .style("stroke-width", "2");
+        
+            var sovietLine;
+            var usaLine;
+            
+            function updateChartData(country) {
+                let countryData = series.find(d => d.team === country).values;
+                console.log("countryData: ", countryData)
+    
+                var xScale = d3.scaleTime()
+                    .domain(d3.extent(countryData, function(d) {
+                        return new Date(d.year);
+                    }))
+                    .range([0, width]);
+                var yScale = d3.scaleLinear().domain([0, 200]).range([height, 0]);
+    
+                svg.selectAll("circle")
+                    .data(countryData)
+                    .attr("cx", function(d) { return xScale(d.year); })
+                    .attr("cy", function(d) { return yScale(d.total); })
+                    .style("fill", country === "United States" ? "#E69F00" : country === "France" ? "#56B4E9" : country === "Great Britain" ? "#009E73" : country === "Russia" ? "#CC79A7" : "#999999");
+    
+                var line = d3.line()
+                    .x(function(d) { return xScale(d.year); })
+                    .y(function(d) { return yScale(d.total); })
+                    .curve(d3.curveMonotoneX);
+    
+                svg.select(".line")
+                    .datum(countryData)
+                    .attr("d", line)
+                    .style("stroke", country === "United States" ? "#E69F00" : country === "France" ? "#56B4E9" : country === "Great Britain" ? "#009E73" : country === "Russia" ? "#CC79A7" : "#999999");
+                    
+                d3.select(".annotations").remove();
+                                
+                var annotations = []
+                        
+                if (country === "United States") {
+                    annotations = [
+                        {
+                            note: {
+                              label: "The United States boycotted the 1980 Summer Olympics, hosted in the Moscow, protest against the Soviet invasion of Afghanistan",
+                              title: "1980 Summer Olympics"
+                            },
+                            x: 590,
+                            y: 600,
+                            dy: -250,
+                            dx: -150
+                        },
+                        {
+                            note: {
+                              label: "The United States hosted the 1984 Summer Olympics in Los Angeles, just 4 years after the 1980 Moscow boycott",
+                              title: "1984 Summer Olympics"
+                            },
+                            x: 613,
+                            y: 135,
+                            dy: 220,
+                            dx: 70
+                        }
+                    ]
+                } else if (country == "Soviet Union") {
+                    annotations = [
+                        {
+                            note: {
+                              label: "The Societ Union boycotted the United States hosted 1984 Summer Olympics, just 4 years after the USA's 1980 Moscow boycot",
+                              title: "1984 Summer Olympics"
+                            },
+                            x: 613,
+                            y: 600,
+                            dy: -50,
+                            dx: 65
+                        },
+                        {
+                            note: {
+                              label: "The Soviet Union hosted the 1980 Summer Olympics in Moscow which was boycotted by the United States",
+                              title: "1980 Summer Olympics"
+                            },
+                            x: 590,
+                            y: 133,
+                            dy: 50,
+                            dx: -100
+                        }
+                    ];
+                } else if (country == "Russia") {
+                    annotations = [
+                        {
+                            note: {
+                              label: "Following the Dissolution of the Soviet Union in 1991, we see the Soviet Union replaced by Russia in the Olympics. Ending the era of the US vs. Soviet Olympic rivalry",
+                              title: "1992 Summer Olympics"
+                            },
+                            x: 660,
+                            y: 600,
+                            dy: -50,
+                            dx: -65
+                        }
+                    ];
+                } else {
+                    sovietLine = svg.append("g")
+                        .append('line')
+                        .style("stroke", "red")
+                        .style("stroke-width", 1)
+                        .attr("x1", 100)
+                        .attr("y1", 133)
+                        .attr("x2", 800)
+                        .attr("y2", 133);
+                    usLine = svg.append("g")
+                        .append('line')
+                        .style("stroke", "blue")
+                        .style("stroke-width", 1)
+                        .attr("x1", 100)
+                        .attr("y1", 135)
+                        .attr("x2", 800)
+                        .attr("y2", 135);
+                        
+                    annotations = [
+                        {
+                            note: {
+                              label: "The most medals aquired by the United States in any single Olympic Games",
+                              title: "1984 US Athlete's Medal Count"
+                            },
+                            x: 400,
+                            y: 135,
+                            dy: 30,
+                            dx: 65
+                        },
+                        {
+                            note: {
+                              label: "The most medals aquired by Soviet Athletes (or by athletes from a single country) in any single Olympic Games",
+                              title: "1980 Soviet Athlete's Medal Count"
+                            },
+                            x: 400,
+                            y: 133,
+                            dy: 30,
+                            dx: -65
+                        }
+                    ];
+                }
+                
+                const makeAnnotations = d3.annotation()
+                    .annotations(annotations)
+            
+            d3.select("svg")
+                .append("g")
+                .call(makeAnnotations)
+            }
+    
+            document.getElementById("btn-us").addEventListener("click", function() {
+                updateChartData("United States");
+            });
+            
+            document.getElementById("btn-soviet-union").addEventListener("click", function() {
+                updateChartData("Soviet Union");
+            });
+            
+            document.getElementById("btn-russia").addEventListener("click", function() {
+                updateChartData("Russia");
+            });
+    
+            document.getElementById("btn-france").addEventListener("click", function() {
+                updateChartData("France");
+            });
+    
+            document.getElementById("btn-gb").addEventListener("click", function() {
+                updateChartData("Great Britain");
+            });
+            
+            
+            document.getElementById("btn-italy").addEventListener("click", function() {
+                updateChartData("Italy");
+            });
+    
+            updateChartData("United States");
         });
-
-        let us_data = series[1].values;
-
-        var svg = d3.select("svg"),
-            margin = 200,
-            width = svg.attr("width") - margin,
-            height = svg.attr("height") - margin
-
-        var xScale = d3.scaleTime()
-            .domain(d3.extent(us_data, function(d) { 
-                return new Date(d.year); 
-            }))
-            .range([0, width]);
-        var yScale = d3.scaleLinear().domain([0, 200]).range([height, 0]);
-
-        var g = svg.append("g")
-          .attr("transform", "translate(" + 100 + "," + 100 + ")");
-
-        svg.append('text')
-        .attr('x', width/2 + 100)
-        .attr('y', 100)
-        .attr('text-anchor', 'middle')
-        .style('font-family', 'Helvetica')
-        .style('font-size', 20)
-        .text('Line Chart');
-
-        svg.append('text')
-        .attr('x', width/2 + 100)
-        .attr('y', height - 15 + 150)
-        .attr('text-anchor', 'middle')
-        .style('font-family', 'Helvetica')
-        .style('font-size', 12)
-        .text('Independant');
-
-        svg.append('text')
-        .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(60,' + height + ')rotate(-90)')
-        .style('font-family', 'Helvetica')
-        .style('font-size', 12)
-        .text('Dependant');
-
-        g.append("g")
-        .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(xScale));
-
-        g.append("g")
-        .call(d3.axisLeft(yScale));
-
-        svg.append('g')
-        .selectAll("dot")
-        .data(us_data)
-        .enter()
-        .append("circle")
-        .attr("cx", function (d) { return xScale(d.year); } )
-        .attr("cy", function (d) { return yScale(d.total); } )
-        .attr("r", 3)
-        .attr("transform", "translate(" + 100 + "," + 100 + ")")
-        .style("fill", "#CC0000");
-
-        var line = d3.line()
-        .x(function(d) { return xScale(d.year); }) 
-        .y(function(d) { return yScale(d.total); }) 
-        .curve(d3.curveMonotoneX)
-
-        svg.append("path")
-        .datum(us_data) 
-        .attr("class", "line") 
-        .attr("transform", "translate(" + 100 + "," + 100 + ")")
-        .attr("d", line)
-        .style("fill", "none")
-        .style("stroke", "#CC0000")
-        .style("stroke-width", "2");
-    });
-</script>
+    </script>
 </body>
 </html>
