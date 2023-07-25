@@ -4,7 +4,7 @@
     <script src="https://d3js.org/d3.v5.min.js"></script>
     <script src="https://rawgit.com/susielu/d3-annotation/master/d3-annotation.min.js"></script>
     <style>
-        .button-4 {
+        .button {
           appearance: none;
           background-color: #FAFBFC;
           border: 1px solid rgba(27, 31, 35, 0.15);
@@ -30,34 +30,34 @@
           word-wrap: break-word;
         }
         
-        .button-4:hover {
+        .button:hover {
           background-color: #F3F4F6;
           text-decoration: none;
           transition-duration: 0.1s;
         }
         
-        .button-4:disabled {
+        .button:disabled {
           background-color: #FAFBFC;
           border-color: rgba(27, 31, 35, 0.15);
           color: #959DA5;
           cursor: default;
         }
         
-        .button-4:active {
+        .button:active {
           background-color: #EDEFF2;
           box-shadow: rgba(225, 228, 232, 0.2) 0 1px 0 inset;
           transition: none 0s;
         }
         
-        .button-4:focus {
+        .button:focus {
           outline: 1px transparent;
         }
         
-        .button-4:before {
+        .button:before {
           display: none;
         }
         
-        .button-4:-webkit-details-marker {
+        .button:-webkit-details-marker {
           display: none;
         }
         
@@ -71,15 +71,15 @@
     <svg width="900" height="700"></svg>
     <div class="center">
         <p><b>The United States and Soviet Rivalry</b></p>
-        <button id="btn-us" class="button-4">United States</button>
-        <button id="btn-soviet-union" class="button-4">Soviet Union</button>
-        <button id="btn-russia" class="button-4">Russia</button>
+        <button id="btn-us" class="button">United States</button>
+        <button id="btn-soviet-union" class="button">Soviet Union</button>
+        <button id="btn-russia" class="button">Russia</button>
     </div>
     <div class="center">
         <p><b>Other Top Contenders</b></p>
-        <button id="btn-france" class="button-4">France</button>
-        <button id="btn-gb" class="button-4">Great Britain</button>
-        <button id="btn-italy" class="button-4">Italy</button>
+        <button id="btn-france" class="button">France</button>
+        <button id="btn-gb" class="button">Great Britain</button>
+        <button id="btn-italy" class="button">Italy</button>
     </div>
     <div class="center">
       <script>
